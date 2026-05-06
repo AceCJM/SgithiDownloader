@@ -135,6 +135,7 @@ def get_progress(task_id):
 @app.route('/downloads')
 def downloads():
     """List downloaded files"""
+    from datetime import datetime
     download_dir = app.config['UPLOAD_FOLDER']
     files = []
 
@@ -145,7 +146,7 @@ def downloads():
                 files.append({
                     'name': filename,
                     'size': os.path.getsize(filepath),
-                    'modified': os.path.getmtime(filepath)
+                    'modified': datetime.fromtimestamp(os.path.getmtime(filepath)).strftime('%Y-%m-%d %H:%M:%S')
                 })
 
     # Sort by modification time (newest first)
