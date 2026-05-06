@@ -4,7 +4,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 console = Console()
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 def create_parser():
     parser = argparse.ArgumentParser(
