@@ -4,12 +4,14 @@ A Python tool to download YouTube videos and audio in various high-quality forma
 
 ## Features
 
-- Download individual YouTube videos or entire playlists
-- Support for multiple video formats (MP4, WebM, etc.)
-- Convert and download audio in various formats (Opus, MP3, FLAC, AAC, etc.)
-- Automatically embed video thumbnails as album art
-- Include metadata (title, artist, album, date, description) in supported formats
-- Crop thumbnails to square format for better display
+- 🎬 Download individual YouTube videos or entire playlists
+- 🎵 Support for multiple video formats (MP4, WebM, AVI, MKV)
+- 🎧 Convert and download audio in various formats (Opus, MP3, FLAC, AAC, etc.)
+- 🖼️ Automatically embed video thumbnails as album art
+- 📋 Include metadata (title, artist, album, date, description) in supported formats
+- ✂️ Crop thumbnails to square format for better display
+- 📊 Beautiful progress bars and colored output
+- 🚀 Intuitive subcommand-based CLI interface
 
 ## Installation
 
@@ -37,67 +39,147 @@ Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
 ### Install the Package
 
 ```bash
-git clone <your-repo-url>
-cd OpusDownloader
-pip install .
+pip install sgithidownloader
 ```
 
 For development:
 ```bash
+git clone https://github.com/AceCJM/SgithiDownloader.git
+cd SgithiDownloader
 pip install -e .
 ```
 
 ## Usage
 
+The CLI uses a modern subcommand structure for clarity:
+
 ### Download a Single Video
 
 ```bash
-sgithidownloader -s "https://www.youtube.com/watch?v=VIDEO_ID" -o /path/to/output/
-```
-
-### Download a Playlist
-
-```bash
-sgithidownloader -p "https://www.youtube.com/playlist?list=PLAYLIST_ID" -o /path/to/output/
+sgithidownloader video "https://www.youtube.com/watch?v=VIDEO_ID" -o /path/to/output/
 ```
 
 ### Download Audio
 
 ```bash
-sgithidownloader -s "https://www.youtube.com/watch?v=VIDEO_ID" -f audio -af opus -o /path/to/output/
+sgithidownloader audio "https://www.youtube.com/watch?v=VIDEO_ID" -f opus -o /path/to/output/
 ```
 
-### Options
+### Download a Playlist
 
-- `-s, --single URL`: Download a single video
-- `-p, --playlist URL`: Download all videos in a playlist
+```bash
+sgithidownloader playlist "https://www.youtube.com/playlist?list=PLAYLIST_ID" -t audio -f mp3 -o /path/to/output/
+```
+
+### List Available Formats
+
+```bash
+sgithidownloader formats
+```
+
+### Get Help
+
+```bash
+# General help
+sgithidownloader --help
+
+# Help for specific command
+sgithidownloader video --help
+sgithidownloader audio --help
+sgithidownloader playlist --help
+```
+
+## Command Reference
+
+### `sgithidownloader video`
+
+Download a single YouTube video.
+
+```bash
+sgithidownloader video URL [OPTIONS]
+```
+
+**Options:**
 - `-o, --output DIR`: Output directory (default: current directory)
-- `-f, --format FORMAT`: File format for video (mp4, webm, audio, etc.) (default: mp4)
-- `-af, --audio_format FORMAT`: Audio format (best, aac, alac, flac, m4a, mp3, opus, vorbis, wav) (default: best)
-- `-l, --listFormats`: List available audio formats and exit
-- `--help`: Show help message
+- `-f, --format FORMAT`: Video format (mp4, webm, avi, mkv) (default: mp4)
+
+### `sgithidownloader audio`
+
+Download audio from a YouTube video.
+
+```bash
+sgithidownloader audio URL [OPTIONS]
+```
+
+**Options:**
+- `-o, --output DIR`: Output directory (default: current directory)
+- `-f, --format FORMAT`: Audio format (best, aac, alac, flac, m4a, mp3, opus, vorbis, wav) (default: best)
+
+### `sgithidownloader playlist`
+
+Download all videos from a YouTube playlist.
+
+```bash
+sgithidownloader playlist URL [OPTIONS]
+```
+
+**Options:**
+- `-o, --output DIR`: Output directory (default: current directory)
+- `-t, --type TYPE`: Download type (video or audio) (default: video)
+- `-f, --format FORMAT`: Format (depends on type - video: mp4/webm/avi/mkv, audio: opus/mp3/etc.) (default: mp4)
+
+### `sgithidownloader formats`
+
+Display all available video and audio formats with descriptions.
 
 ## Examples
 
 ```bash
-# Download a single video to the current directory
-sgithidownloader -s "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+# Download a single video in MP4 format
+sgithidownloader video "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -f mp4
 
-# Download a playlist to a specific folder
-sgithidownloader -p "https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4qtr5G1G8jQGzq9j9j9j" -o ~/Videos/
+# Download audio in high-quality Opus format
+sgithidownloader audio "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -f opus -o ~/Music/
 
-# Download audio in MP3 format
-sgithidownloader -s "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -f audio -af mp3 -o ~/Music/
+# Download an entire playlist as MP3 files
+sgithidownloader playlist "https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4qtr5G1G8jQGzq9j9j9j" -t audio -f mp3 -o ~/Music/Playlist/
 
-# List available audio formats
-sgithidownloader -l
+# Download a playlist of videos
+sgithidownloader playlist "https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4qtr5G1G8jQGzq9j9j9j" -o ~/Videos/
+
+# List all available formats
+sgithidownloader formats
 ```
+
+## Supported Formats
+
+### Audio Formats
+- **best**: Auto-select best quality (recommended)
+- **opus**: High quality, supports metadata
+- **mp3**: Universal compatibility, supports metadata
+- **flac**: Lossless, high quality
+- **aac**: Good quality, wide support
+- **m4a**: AAC in MP4 container
+- **alac**: Apple Lossless
+- **vorbis**: Open source, good quality
+- **wav**: Uncompressed
+
+### Video Formats
+- **mp4**: Most compatible format
+- **webm**: Open format, good compression
+- **avi**: Legacy format
+- **mkv**: Advanced container format
+
+**Note:** Metadata embedding is only supported for opus and mp3 formats.
 
 ## Dependencies
 
-- yt-dlp: For downloading and extracting audio
-- mutagen: For embedding metadata in audio files
-- pytube: For playlist handling
+- **yt-dlp**: For downloading and extracting media
+- **mutagen**: For embedding metadata in audio files
+- **pytube**: For playlist handling
+- **rich**: For beautiful console output
+- **tqdm**: For progress bars
+- **pillow**: For image processing
 - pillow: For image processing
 - requests: For downloading thumbnails
 
