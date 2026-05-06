@@ -40,3 +40,6 @@ urls = { Homepage = "https://github.com/AceCJM/SgithiDownloader" }
 
 [project.scripts]
 sgithidownloader = "sgithidownloader:cli"
+
+[tool.setuptools.packages.find]
+exclude = ["downloads", "downloads.*"]
