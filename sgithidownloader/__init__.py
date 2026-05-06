@@ -8,7 +8,13 @@ from sgithidownloader.video import video_main
 
 def cli():
     parser = argparse.ArgumentParser(
-        description="SgithiDownloader - Version 1.0 - Download YouTube videos"
+        description="SgithiDownloader - Version 1.0.2 - Download YouTube videos"
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="SgithiDownloader 1.0.2 - Developed by Cody Miller (cmiller@fuck.it) - https://github.com/AceCJM/SgithiDownloader",
     )
     parser.add_argument(
         "-s", "--single", type=str, help="Download a single video from URL"

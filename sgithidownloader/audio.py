@@ -32,6 +32,7 @@ def crop_thumbnail_for_audio_file(image_file_path):
 
 
 def download_audio_file(url: str, output, format="best"):
+    target_format = format if format != "best" else "opus"
     ydl_opts = {
         "format": "bestaudio/best",
         "embed-metadata": True,
@@ -48,9 +49,10 @@ def download_audio_file(url: str, output, format="best"):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
+        filename = os.path.splitext(ydl.prepare_filename(info))[0]
+        filename = f"{filename}.{target_format}"
         print(f"Downloaded: {filename}")
-        return f"{filename}.{format if format != 'best' else 'opus'}", info
+        return filename, info
 
 
 def embed_image_in_audio_file(audio_file_path, image_file_path, info):

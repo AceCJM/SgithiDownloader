@@ -1,4 +1,5 @@
 
+import os
 import requests, re
 
 def get_video_id(url):
@@ -14,7 +15,7 @@ def grab_thumb(url: str, output) -> str:
     url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
     response = requests.get(url)
     if response.status_code == 200:
-        image_file_path = f"{output}{videoId}_thumb.jpg"
+        image_file_path = os.path.join(output, f"{videoId}_thumb.jpg")
         with open(image_file_path, "wb") as f:
             f.write(response.content)
         print("Thumbnail downloaded")

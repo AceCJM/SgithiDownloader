@@ -11,9 +11,10 @@ def download_video_file(url: str, output, format="mp4"):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
+        filename = os.path.splitext(ydl.prepare_filename(info))[0]
+        filename = f"{filename}.{format}"
         print(f"Downloaded: {filename}")
-        return f"{filename}.{format}", info
+        return filename, info
 
 def video_main(url, output="./", format="mp4"):
     try:
