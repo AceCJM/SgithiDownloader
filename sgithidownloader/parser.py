@@ -4,7 +4,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 console = Console()
-VERSION = "1.1.0"
+VERSION = "2.0.0"
 
 def create_parser():
     parser = argparse.ArgumentParser(
@@ -104,6 +104,13 @@ For more help: sgithidownloader <command> --help
         "formats",
         help="List available formats",
         description="Show all supported video and audio formats"
+    )
+
+    # WebUI command
+    webui_parser = subparsers.add_parser(
+        "webui",
+        help="Start the web interface",
+        description="Run SgithiDownloader with a user-friendly web interface"
     )
 
     return parser

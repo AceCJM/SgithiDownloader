@@ -12,6 +12,7 @@ A Python tool to download YouTube videos and audio in various high-quality forma
 - ✂️ Crop thumbnails to square format for better display
 - 📊 Beautiful progress bars and colored output
 - 🚀 Intuitive subcommand-based CLI interface
+- 🌐 User-friendly web interface with real-time progress tracking
 
 ## Installation
 
@@ -89,6 +90,30 @@ sgithidownloader audio --help
 sgithidownloader playlist --help
 ```
 
+## Web Interface
+
+For users who prefer a graphical interface, SgithiDownloader includes a beautiful web UI:
+
+```bash
+sgithidownloader webui
+```
+
+This will start a local web server at `http://localhost:5000` where you can:
+
+- 📱 Use an intuitive form-based interface
+- 📊 Monitor download progress in real-time
+- 📁 Browse and download completed files
+- 🎯 Select formats with visual options
+- 📂 Choose custom output directories
+
+### Web UI Features
+
+- **Real-time Progress**: Watch downloads progress with live updates
+- **Format Selection**: Easy dropdown menus for video/audio formats
+- **Download History**: View and download previously completed files
+- **Responsive Design**: Works on desktop and mobile devices
+- **Background Processing**: Downloads run in the background without blocking the UI
+
 ## Command Reference
 
 ### `sgithidownloader video`
@@ -131,6 +156,16 @@ sgithidownloader playlist URL [OPTIONS]
 ### `sgithidownloader formats`
 
 Display all available video and audio formats with descriptions.
+
+### `sgithidownloader webui`
+
+Start the web interface for graphical downloads.
+
+```bash
+sgithidownloader webui
+```
+
+**Description:** Launches a local web server at http://localhost:5000 with a user-friendly interface for downloading YouTube content.
 
 ## Examples
 
@@ -180,8 +215,8 @@ sgithidownloader formats
 - **rich**: For beautiful console output
 - **tqdm**: For progress bars
 - **pillow**: For image processing
-- pillow: For image processing
-- requests: For downloading thumbnails
+- **requests**: For downloading thumbnails
+- **flask**: For the web interface
 
 ## License
 

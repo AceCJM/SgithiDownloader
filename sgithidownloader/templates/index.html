@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 SgithiDownloader - YouTube Downloader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        .hero-section {
+            text-align: center;
+            color: white;
+            padding: 60px 0;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .format-select {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 mb-4"><i class="fas fa-music"></i> SgithiDownloader</h1>
+            <p class="lead">Download YouTube videos and audio with beautiful embedded thumbnails and metadata</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <h2 class="card-title text-center mb-4"><i class="fas fa-download"></i> Start Downloading</h2>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form id="downloadForm" method="POST" action="/download">
+                            <div class="mb-4">
+                                <label for="url" class="form-label">
+                                    <i class="fas fa-link"></i> YouTube URL
+                                </label>
+                                <input type="url" class="form-control" id="url" name="url"
+                                       placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                                       required>
+                                <div class="form-text">Supports single videos, playlists, and shorts</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="download_type" class="form-label">
+                                        <i class="fas fa-file-video"></i> Download Type
+                                    </label>
+                                    <select class="form-select" id="download_type" name="download_type" required>
+                                        <option value="video">🎬 Video</option>
+                                        <option value="audio">🎵 Audio</option>
+                                        <option value="playlist">📋 Playlist</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="output_dir" class="form-label">
+                                        <i class="fas fa-folder"></i> Output Directory
+                                    </label>
+                                    <input type="text" class="form-control" id="output_dir" name="output_dir"
+                                           value="./downloads" placeholder="./downloads">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label"><i class="fas fa-cog"></i> Format</label>
+
+                                <!-- Video Formats -->
+                                <div id="video_formats" class="format-select">
+                                    <select class="form-select" name="format_video">
+                                        <option value="mp4">🎬 MP4 (Recommended)</option>
+                                        <option value="webm">🎥 WebM</option>
+                                        <option value="avi">📼 AVI</option>
+                                        <option value="mkv">🎪 MKV</option>
+                                    </select>
+                                </div>
+
+                                <!-- Audio Formats -->
+                                <div id="audio_formats" class="format-select">
+                                    <select class="form-select" name="format_audio">
+                                        <option value="best">⭐ Best Quality (Recommended)</option>
+                                        <option value="opus">🎵 Opus (High Quality)</option>
+                                        <option value="mp3">🎶 MP3 (Universal)</option>
+                                        <option value="flac">🎼 FLAC (Lossless)</option>
+                                        <option value="aac">🎧 AAC</option>
+                                        <option value="m4a">📱 M4A</option>
+                                        <option value="alac">🍎 ALAC</option>
+                                        <option value="vorbis">🎸 Vorbis</option>
+                                        <option value="wav">📻 WAV</option>
+                                    </select>
+                                </div>
+
+                                <!-- Playlist Formats -->
+                                <div id="playlist_formats" class="format-select">
+                                    <select class="form-select" name="format_playlist">
+                                        <option value="mp4">🎬 Video (MP4)</option>
+                                        <option value="best">🎵 Audio (Best)</option>
+                                        <option value="opus">🎵 Audio (Opus)</option>
+                                        <option value="mp3">🎵 Audio (MP3)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-rocket"></i> Start Download
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h5 class="card-title">High Quality Audio</h5>
+                        <p class="card-text">Download audio in various formats including Opus, MP3, and FLAC with embedded metadata and thumbnails.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h5 class="card-title">Video Downloads</h5>
+                        <p class="card-text">Download videos in MP4, WebM, and other formats with the best available quality.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <h5 class="card-title">Playlist Support</h5>
+                        <p class="card-text">Download entire YouTube playlists with progress tracking and error handling.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Format selection logic
+        document.getElementById('download_type').addEventListener('change', function() {
+            const type = this.value;
+            document.querySelectorAll('.format-select').forEach(el => el.style.display = 'none');
+
+            if (type === 'video') {
+                document.getElementById('video_formats').style.display = 'block';
+            } else if (type === 'audio') {
+                document.getElementById('audio_formats').style.display = 'block';
+            } else if (type === 'playlist') {
+                document.getElementById('playlist_formats').style.display = 'block';
+            }
+        });
+
+        // Set default format selection
+        document.getElementById('download_type').dispatchEvent(new Event('change'));
+
+        // Form submission with loading state
+        document.getElementById('downloadForm').addEventListener('submit', function(e) {
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting Download...';
+            button.disabled = true;
+
+            // Re-enable after 3 seconds (in case of redirect issues)
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

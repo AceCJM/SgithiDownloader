@@ -88,6 +88,20 @@ def cli():
         except Exception as e:
             console.print(f"[red]❌ Error processing playlist: {e}[/red]")
 
+    # Handle webui command
+    elif args.command == "webui":
+        try:
+            from sgithidownloader.webui import run_webui
+            console.print("[green]🚀 Starting web interface...[/green]")
+            run_webui()
+        except Exception as e:
+            console.print(f"[red]❌ Error starting web interface: {e}[/red]")
+    
+    # Handle WebUI command
+    elif args.command == "webui":
+        from sgithidownloader.webui import app
+        console.print("[green]🚀 Starting WebUI... Open http://localhost:5000[/green]")
+        app.run(debug=True)
 
 if __name__ == "__main__":
     cli()
