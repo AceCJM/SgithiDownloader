@@ -1,79 +1,92 @@
-import sys, requests, base64, os
-import yt_dlp, re
+import sys
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
+from rich.panel import Panel
+from rich.text import Text
 from pytube import Playlist
-import argparse
 
 from sgithidownloader.audio import audio_main
 from sgithidownloader.video import video_main
+from sgithidownloader.parser import create_parser, show_welcome, show_formats
+
+console = Console()
 
 def cli():
-    parser = argparse.ArgumentParser(
-        description="SgithiDownloader - Version 1.0.2 - Download YouTube videos"
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="SgithiDownloader 1.0.2 - Developed by Cody Miller (cmiller@fuck.it) - https://github.com/AceCJM/SgithiDownloader",
-    )
-    parser.add_argument(
-        "-s", "--single", type=str, help="Download a single video from URL"
-    )
-    parser.add_argument(
-        "-p", "--playlist", type=str, help="Download all videos from playlist URL"
-    )
-    parser.add_argument(
-        "-o", "--output", type=str, default="./", help="Output directory (default: ./)"
-    )
-    parser.add_argument(
-        "-f",
-        "--format",
-        type=str,
-        default="mp4",
-        help="File format (mp4, webm, audio, etc.) (default: mp4)",
-    )
-    parser.add_argument(
-        "-af",
-        "--audio_format",
-        type=str,
-        default="best",
-        help="Audio format (opus, flac, etc.) (default: best)",
-    )
-    parser.add_argument(
-        "-l",
-        "--listFormats",
-        action="store_true",
-        help="List available audio formats and exit",
-    )
+    parser = create_parser()
+
+    if len(sys.argv) == 1:
+        show_welcome()
+        parser.print_help()
+        return
 
     args = parser.parse_args()
 
-    if args.listFormats:
-        print("Available audio formats:")
-        print(
-            "- best (default, auto-selects the best format)\n- aac\n- alac\n- flac\n- m4a\n- mp3\n- opus\n- vorbis\n- wav",
-            "Metadata is only embedded in opus and mp3 formats due to mutagen limitations.",
-        )
+    if args.command == "formats":
+        show_formats()
         return
 
-    if args.single:
-        if args.format == "audio":
-            format = args.audio_format
-            audio_main(args.single, args.output, format)
-        else:
-            video_main(args.single, args.output, args.format)
-    elif args.playlist:
-        yt_play = Playlist(args.playlist)
-        print(f"Downloading {len(yt_play.video_urls)} videos")
-        if args.format == "audio":
-            format = args.audio_format
-            for video in yt_play.videos:
-                audio_main(video.watch_url, args.output, format)
-        else:
-            for video in yt_play.videos:
-                video_main(video.watch_url, args.output, args.format)
-    else:
-        parser.print_help()
+    if not args.command:
+        console.print("[red]❌ Error: No command specified. Use 'sgithidownloader --help' for usage.[/red]")
+        return
+
+    # Handle video download
+    if args.command == "video":
+        console.print(f"[green]🎬 Downloading video from:[/green] {args.url}")
+        console.print(f"[blue]📁 Output directory:[/blue] {args.output}")
+        console.print(f"[yellow]📹 Format:[/yellow] {args.format}")
+        try:
+            video_main(args.url, args.output, args.format)
+            console.print("[green]✅ Video download completed successfully![/green]")
+        except Exception as e:
+            console.print(f"[red]❌ Error downloading video: {e}[/red]")
+
+    # Handle audio download
+    elif args.command == "audio":
+        console.print(f"[green]🎵 Downloading audio from:[/green] {args.url}")
+        console.print(f"[blue]📁 Output directory:[/blue] {args.output}")
+        console.print(f"[yellow]🎧 Format:[/yellow] {args.format}")
+        try:
+            audio_main(args.url, args.output, args.format)
+            console.print("[green]✅ Audio download completed successfully![/green]")
+        except Exception as e:
+            console.print(f"[red]❌ Error downloading audio: {e}[/red]")
+
+    # Handle playlist download
+    elif args.command == "playlist":
+        try:
+            yt_play = Playlist(args.url)
+            total_videos = len(yt_play.video_urls)
+            console.print(f"[green]📋 Found playlist with {total_videos} videos[/green]")
+            console.print(f"[blue]📁 Output directory:[/blue] {args.output}")
+            console.print(f"[yellow]📋 Type:[/yellow] {args.type}")
+            console.print(f"[yellow]📹 Format:[/yellow] {args.format}")
+
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                TimeRemainingColumn(),
+                console=console
+            ) as progress:
+                task = progress.add_task(f"Downloading {total_videos} {args.type}s...", total=total_videos)
+
+                for i, video in enumerate(yt_play.videos, 1):
+                    progress.update(task, description=f"Downloading {args.type} {i}/{total_videos}: {video.title[:50]}...")
+                    try:
+                        if args.type == "audio":
+                            audio_main(video.watch_url, args.output, args.format)
+                        else:
+                            video_main(video.watch_url, args.output, args.format)
+                        progress.update(task, advance=1)
+                    except Exception as e:
+                        console.print(f"[red]❌ Error downloading {video.title}: {e}[/red]")
+                        progress.update(task, advance=1)
+
+            console.print("[green]✅ Playlist download completed![/green]")
+
+        except Exception as e:
+            console.print(f"[red]❌ Error processing playlist: {e}[/red]")
 
 
 if __name__ == "__main__":
