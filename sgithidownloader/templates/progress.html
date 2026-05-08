@@ -124,9 +124,21 @@
                     if (status === 'completed' || status === 'error') {
                         clearInterval(updateInterval);
                         if (status === 'completed') {
-                            setTimeout(() => {
-                                window.location.href = '/downloads';
-                            }, 2000);
+                            // If a single file was produced, trigger browser download automatically
+                            if (data.files && data.files.length === 1) {
+                                const filename = encodeURIComponent(data.files[0]);
+                                const link = document.createElement('a');
+                                link.href = `/download_file/${filename}`;
+                                link.download = data.files[0];
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            } else {
+                                // otherwise redirect to downloads listing
+                                setTimeout(() => {
+                                    window.location.href = '/downloads';
+                                }, 1000);
+                            }
                         }
                     }
                 })

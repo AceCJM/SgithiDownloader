@@ -52,7 +52,8 @@ def download_audio_file(url: str, output, format="best"):
             "embed-metadata": True,
             "add-metadata": True,
             "continuedl": False,
-            "outtmpl": os.path.join(output, "%(title)s [%(id)s]"),
+            # include extension in the template to ensure saved files have proper suffixes
+            "outtmpl": os.path.join(output, "%(title)s [%(id)s].%(ext)s"),
             "progress_hooks": [lambda d: progress_hook(d, pbar)],
             "postprocessors": [
                 {
@@ -64,6 +65,7 @@ def download_audio_file(url: str, output, format="best"):
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
+            # prepare_filename returns the filename including extension; convert to target format
             filename = os.path.splitext(ydl.prepare_filename(info))[0]
             filename = f"{filename}.{target_format}"
             print(f"Downloaded: {filename}")
@@ -130,3 +132,4 @@ def audio_main(url, output="./", format="best"):
     if os.path.exists(image_file_path):
         os.remove(image_file_path)
         print(f"Deleted thumbnail file {image_file_path}")
+    return audio_file_path, info

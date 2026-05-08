@@ -99,7 +99,7 @@
                                                 </div>
                                             </div>
                                             <div class="ms-3">
-                                                <a href="/download_file/{{ file.name }}" class="btn btn-download btn-sm">
+                                                <a href="{{ url_for('download_file', filename=file.name) }}" class="btn btn-download btn-sm">
                                                     <i class="fas fa-download"></i> Download
                                                 </a>
                                             </div>

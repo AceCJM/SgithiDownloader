@@ -12,7 +12,8 @@ from sgithidownloader.video import video_main
 
 app = Flask(__name__)
 app.secret_key = 'sgithi-downloader-secret-key'
-app.config['UPLOAD_FOLDER'] = './downloads'
+# Use absolute path for upload folder so send_from_directory resolves correctly
+app.config['UPLOAD_FOLDER'] = os.path.abspath('./downloads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Ensure download directory exists
@@ -36,12 +37,15 @@ def download_worker(task_id, url, output_dir, download_type, format_type):
     try:
         update_progress(task_id, 'starting', 0, f'Starting {download_type} download...')
 
+        saved_files = []
         if download_type == 'video':
             update_progress(task_id, 'downloading', 10, 'Downloading video...')
-            video_main(url, output_dir, format_type)
+            video_file, info = video_main(url, output_dir, format_type)
+            saved_files.append(os.path.basename(video_file))
         elif download_type == 'audio':
             update_progress(task_id, 'downloading', 10, 'Downloading audio...')
-            audio_main(url, output_dir, format_type)
+            audio_file, info = audio_main(url, output_dir, format_type)
+            saved_files.append(os.path.basename(audio_file))
         elif download_type == 'playlist':
             update_progress(task_id, 'processing', 5, 'Processing playlist...')
             yt_playlist = Playlist(url)
@@ -55,17 +59,22 @@ def download_worker(task_id, url, output_dir, download_type, format_type):
 
                 try:
                     if format_type in ['best', 'aac', 'alac', 'flac', 'm4a', 'mp3', 'opus', 'vorbis', 'wav']:
-                        audio_main(video.watch_url, output_dir, format_type)
+                        audio_file, info = audio_main(video.watch_url, output_dir, format_type)
+                        saved_files.append(os.path.basename(audio_file))
                     else:
-                        video_main(video.watch_url, output_dir, format_type)
+                        video_file, info = video_main(video.watch_url, output_dir, format_type)
+                        saved_files.append(os.path.basename(video_file))
                 except Exception as e:
                     update_progress(task_id, 'error', progress, f'Error downloading {video.title}: {str(e)}')
                     continue
 
+        # attach list of saved files to current_downloads so frontend can trigger browser download
+        current_downloads[task_id]['files'] = saved_files
         update_progress(task_id, 'completed', 100, 'Download completed successfully!')
 
     except Exception as e:
         update_progress(task_id, 'error', 0, f'Download failed: {str(e)}')
+        current_downloads[task_id]['files'] = []
 
 @app.route('/')
 def index():
@@ -74,7 +83,8 @@ def index():
 @app.route('/download', methods=['POST'])
 def download():
     url = request.form.get('url')
-    output_dir = request.form.get('output_dir', './downloads')
+    # Use server-side uploads folder; users will download via browser
+    output_dir = app.config['UPLOAD_FOLDER']
     download_type = request.form.get('download_type')
 
     # Get format based on download type
@@ -106,8 +116,8 @@ def download():
         'url': url,
         'type': download_type,
         'format': format_type,
-        'output_dir': output_dir,
-        'start_time': time.time()
+        'start_time': time.time(),
+        'files': []
     }
 
     flash(f'Download started! Task ID: {task_id}', 'success')
@@ -130,7 +140,11 @@ def progress(task_id):
 @app.route('/api/progress/<task_id>')
 def get_progress(task_id):
     progress_info = download_progress.get(task_id, {'status': 'unknown', 'progress': 0, 'message': 'Task not found'})
-    return jsonify(progress_info)
+    # include generated filenames if available
+    files = current_downloads.get(task_id, {}).get('files', [])
+    response = dict(progress_info)
+    response['files'] = files
+    return jsonify(response)
 
 @app.route('/downloads')
 def downloads():
@@ -157,8 +171,34 @@ def downloads():
 @app.route('/download_file/<filename>')
 def download_file(filename):
     """Serve downloaded files"""
-    from flask import send_from_directory
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+    from flask import send_from_directory, abort
+
+    download_dir = app.config['UPLOAD_FOLDER']
+    # Try direct match first
+    candidate = os.path.join(download_dir, filename)
+    if os.path.isfile(candidate):
+        return send_from_directory(download_dir, filename, as_attachment=True)
+
+    # Try common extensions
+    common_exts = ['.mp4', '.mp3', '.opus', '.flac', '.m4a', '.webm', '.avi', '.mkv', '.wav']
+    for ext in common_exts:
+        cand = os.path.join(download_dir, filename + ext)
+        if os.path.isfile(cand):
+            return send_from_directory(download_dir, os.path.basename(cand), as_attachment=True)
+
+    # Fallback: match by basename (strip extension) to handle files saved without extension
+    matches = []
+    for f in os.listdir(download_dir):
+        if os.path.splitext(f)[0] == filename:
+            matches.append(f)
+
+    if matches:
+        # pick most recently modified match
+        matches.sort(key=lambda f: os.path.getmtime(os.path.join(download_dir, f)), reverse=True)
+        return send_from_directory(download_dir, matches[0], as_attachment=True)
+
+    # No file found
+    abort(404)
 
 def run_webui(host='0.0.0.0', port=5000, debug=False):
     """Run the web UI"""

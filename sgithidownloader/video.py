@@ -20,7 +20,8 @@ def download_video_file(url: str, output, format="mp4"):
             "embed-metadata": True,
             "add-metadata": True,
             "continuedl": False,
-            "outtmpl": os.path.join(output, "%(title)s [%(id)s]"),
+            # include extension in the template to ensure saved files have proper suffixes
+            "outtmpl": os.path.join(output, "%(title)s [%(id)s].%(ext)s"),
             "progress_hooks": [lambda d: progress_hook(d, pbar)],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -34,5 +35,7 @@ def video_main(url, output="./", format="mp4"):
     try:
         video_file_path, info = download_video_file(url, output, format)
         print(f"Video downloaded successfully: {video_file_path}")
+        return video_file_path, info
     except Exception as e:
         print(f"An error occurred while downloading the video: {e}")
+        raise

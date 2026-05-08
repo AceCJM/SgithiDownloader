@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "SgithiDownloader"
-version = "2.0.2"
+version = "2.0.3"
 description = "A tool to download YouTube videos and audio with embedded thumbnails."
 authors = [{ name = "AceCJM", email = "cmiller@fuck.it" }]
 readme = "README.md"
@@ -43,3 +43,6 @@ sgithidownloader = "sgithidownloader:cli"
 
 [tool.setuptools.packages.find]
 exclude = ["downloads", "downloads.*"]
+
+[tool.setuptools.package-data]
+"sgithidownloader" = ["templates/*.html"]
