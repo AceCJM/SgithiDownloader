@@ -1,6 +1,8 @@
-
 import os
 import requests, re
+
+import yt_dlp
+
 
 def get_video_id(url):
     youtube_regex = r"v=([^&]+)"
@@ -10,7 +12,8 @@ def get_video_id(url):
     else:
         return None
 
-def grab_thumb(url: str, output) -> str:
+
+def grab_thumbnail(url: str, output) -> str:
     videoId = get_video_id(url)
     url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
     response = requests.get(url)
@@ -23,3 +26,23 @@ def grab_thumb(url: str, output) -> str:
     else:
         print("Failed to download thumbnail")
         return -1
+
+
+def progress_hook(d, pbar):
+    if d["status"] == "downloading":
+        if "total_bytes" in d and d["total_bytes"] is not None:
+            pbar.total = d["total_bytes"]
+            pbar.update(d["downloaded_bytes"] - pbar.n)
+        elif "total_bytes_estimate" in d and d["total_bytes_estimate"] is not None:
+            pbar.total = d["total_bytes_estimate"]
+            pbar.update(d["downloaded_bytes"] - pbar.n)
+    elif d["status"] == "finished":
+        pbar.close()
+
+
+def download_file(ydl_opts, url, output):
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        filename = os.path.join(output, ydl.prepare_filename(info))
+        print(f"Downloaded: {filename}")
+        return filename, info
