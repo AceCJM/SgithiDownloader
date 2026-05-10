@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 console = Console()
-VERSION = "2.0.3"
+VERSION = "2.0.4"
 
 
 def create_parser():
