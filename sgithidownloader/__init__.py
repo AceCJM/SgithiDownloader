@@ -6,6 +6,7 @@ from rich.text import Text
 from pytube import Playlist
 
 from sgithidownloader.audio import audio_main
+from sgithidownloader.convert import convert_main
 from sgithidownloader.video import video_main
 from sgithidownloader.parser import create_parser, show_welcome, show_formats
 
@@ -50,6 +51,17 @@ def cli():
             console.print("[green]✅ Audio download completed successfully![/green]")
         except Exception as e:
             console.print(f"[red]❌ Error downloading audio: {e}[/red]")
+
+    elif args.command == "convert":
+        console.print(f"[green]🔄 Converting file:[/green] {args.input}")
+        console.print(f"[yellow]🎯 Target format:[/yellow] {args.format}")
+        if args.output:
+            console.print(f"[blue]📁 Output target:[/blue] {args.output}")
+        try:
+            converted_file = convert_main(args.input, args.format, args.output)
+            console.print(f"[green]✅ Conversion completed successfully:[/green] {converted_file}")
+        except Exception as e:
+            console.print(f"[red]❌ Error converting file: {e}[/red]")
 
     # Handle playlist download
     elif args.command == "playlist":

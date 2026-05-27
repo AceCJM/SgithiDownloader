@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Download Progress - SgithiDownloader</title>
+    <title>📊 Task Progress - SgithiDownloader</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -47,14 +47,14 @@
                 <div class="card">
                     <div class="card-body p-5">
                         <h2 class="card-title text-center mb-4">
-                            <i class="fas fa-chart-line"></i> Download Progress
+                            <i class="fas fa-chart-line"></i> Task Progress
                         </h2>
 
                         <div class="text-center mb-4">
                             <div id="status-icon" class="status-icon status-starting">
                                 <i class="fas fa-spinner fa-spin"></i>
                             </div>
-                            <h4 id="status-text">Initializing download...</h4>
+                            <h4 id="status-text">Initializing task...</h4>
                             <p class="text-muted" id="task-info">
                                 Task ID: {{ task_id }}<br>
                                 URL: {{ task_info.url[:50] }}{% if task_info.url|length > 50 %}...{% endif %}<br>
@@ -73,7 +73,7 @@
 
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
-                            <span id="message">Preparing download...</span>
+                            <span id="message">Preparing task...</span>
                         </div>
 
                         <div class="text-center">
@@ -150,11 +150,11 @@
 
         function getStatusText(status) {
             const statusTexts = {
-                'starting': 'Starting download...',
+                'starting': 'Starting task...',
                 'processing': 'Processing...',
                 'downloading': 'Downloading...',
-                'completed': 'Download completed!',
-                'error': 'Download failed',
+                'completed': 'Task completed!',
+                'error': 'Task failed',
                 'unknown': 'Status unknown'
             };
             return statusTexts[status] || 'Processing...';

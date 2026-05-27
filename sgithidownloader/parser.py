@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 console = Console()
-VERSION = "2.0.4"
+VERSION = "2.1.0"
 
 
 def create_parser():
@@ -126,6 +126,29 @@ For more help: sgithidownloader <command> --help
         description="Run SgithiDownloader with a user-friendly web interface",
     )
 
+    # Convert command
+    convert_parser = subparsers.add_parser(
+        "convert",
+        help="Convert a local media file",
+        description="Convert a local audio or video file into another supported format",
+    )
+    convert_parser.add_argument("input", help="Path to the local media file to convert")
+    convert_parser.add_argument(
+        "-f",
+        "--format",
+        type=str,
+        required=True,
+        choices=["aac", "alac", "flac", "m4a", "mp3", "opus", "vorbis", "wav", "mp4", "webm", "avi", "mkv"],
+        help="Output format",
+    )
+    convert_parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default=None,
+        help="Output file path or output directory (default: alongside the input file)",
+    )
+
     return parser
 
 
@@ -165,3 +188,5 @@ def show_formats():
     console.print(
         "\n[dim]📝 Note: Metadata embedding is only supported for opus and mp3 formats[/dim]"
     )
+    console.print("\n[bold green]🔄 Local Conversion:[/bold green]")
+    console.print("  [cyan]convert[/cyan] - Convert local audio or video files between supported formats")

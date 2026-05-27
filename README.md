@@ -7,6 +7,7 @@ A Python tool to download YouTube videos and audio in various high-quality forma
 - 🎬 Download individual YouTube videos or entire playlists
 - 🎵 Support for multiple video formats (MP4, WebM, AVI, MKV)
 - 🎧 Convert and download audio in various formats (Opus, MP3, FLAC, AAC, etc.)
+- 🔄 Convert existing local audio and video files between supported formats
 - 🖼️ Automatically embed video thumbnails as album art
 - 📋 Include metadata (title, artist, album, date, description) in supported formats
 - ✂️ Crop thumbnails to square format for better display
@@ -78,6 +79,13 @@ sgithidownloader playlist "https://www.youtube.com/playlist?list=PLAYLIST_ID" -t
 sgithidownloader formats
 ```
 
+### Convert A Local File
+
+```bash
+sgithidownloader convert ./input.wav -f mp3
+sgithidownloader convert ./clip.mp4 -f webm -o ./converted/
+```
+
 ### Get Help
 
 ```bash
@@ -104,6 +112,7 @@ This will start a local web server at `http://localhost:5000` where you can:
 - 📊 Monitor download progress in real-time
 - 📁 Browse and download completed files
 - 🎯 Select formats with visual options
+- 🔄 Upload and convert existing local media files
 - 📂 Choose custom output directories
 
 ### Web UI Features
@@ -156,6 +165,18 @@ sgithidownloader playlist URL [OPTIONS]
 ### `sgithidownloader formats`
 
 Display all available video and audio formats with descriptions.
+
+### `sgithidownloader convert`
+
+Convert a local media file into another supported format.
+
+```bash
+sgithidownloader convert INPUT [OPTIONS]
+```
+
+**Options:**
+- `-f, --format FORMAT`: Target format (audio: aac, alac, flac, m4a, mp3, opus, vorbis, wav; video: mp4, webm, avi, mkv)
+- `-o, --output PATH`: Output directory or output file path (default: alongside the input file)
 
 ### `sgithidownloader webui`
 

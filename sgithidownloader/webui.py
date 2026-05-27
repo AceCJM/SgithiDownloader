@@ -7,16 +7,18 @@ import threading
 import time
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from pytube import Playlist
+from werkzeug.utils import secure_filename
 
 # Local imports
 from sgithidownloader.audio import audio_main
+from sgithidownloader.convert import AUDIO_FORMATS, FORMAT_TO_EXTENSION, VIDEO_FORMATS, convert_main
 from sgithidownloader.video import video_main
 
 app = Flask(__name__)
 app.secret_key = "sgithi-downloader-secret-key"
 # Use absolute path for upload folder so send_from_directory resolves correctly
 app.config["UPLOAD_FOLDER"] = os.path.abspath("./downloads")
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max file size
+app.config["MAX_CONTENT_LENGTH"] = 512 * 1024 * 1024  # 512MB max file size
 
 # Ensure download directory exists
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -106,6 +108,28 @@ def download_worker(task_id, url, output_dir, download_type, format_type):
         current_downloads[task_id]["files"] = []
 
 
+def convert_worker(task_id, input_file, output_dir, target_format, source_name):
+    """Background worker for local file conversion"""
+    try:
+        update_progress(task_id, "starting", 0, "Preparing file conversion...")
+        update_progress(task_id, "processing", 20, "Converting file with FFmpeg...")
+        output_name = os.path.splitext(source_name)[0] + FORMAT_TO_EXTENSION[target_format]
+        output_path = os.path.join(output_dir, output_name)
+        converted_file = convert_main(input_file, target_format, output_path)
+        update_progress(task_id, "processing", 90, "Finalizing converted file...")
+        current_downloads[task_id]["files"] = [os.path.basename(converted_file)]
+        update_progress(task_id, "completed", 100, "Conversion completed successfully!")
+    except Exception as e:
+        update_progress(task_id, "error", 0, f"Conversion failed: {str(e)}")
+        current_downloads[task_id]["files"] = []
+    finally:
+        try:
+            if os.path.isfile(input_file):
+                os.remove(input_file)
+        except OSError:
+            pass
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -152,6 +176,48 @@ def download():
     }
 
     flash(f"Download started! Task ID: {task_id}", "success")
+    return redirect(url_for("progress", task_id=task_id))
+
+
+@app.route("/convert", methods=["POST"])
+def convert_file():
+    uploaded_file = request.files.get("media_file")
+    target_format = request.form.get("target_format", "mp3").lower()
+
+    if uploaded_file is None or uploaded_file.filename == "":
+        flash("Please choose a file to convert", "error")
+        return redirect(url_for("index"))
+
+    if target_format not in AUDIO_FORMATS | VIDEO_FORMATS:
+        flash("Please choose a supported output format", "error")
+        return redirect(url_for("index"))
+
+    original_name = secure_filename(uploaded_file.filename)
+    if not original_name:
+        flash("Please choose a valid file name", "error")
+        return redirect(url_for("index"))
+
+    task_id = f"{int(time.time())}_{hash((original_name, target_format)) % 10000}"
+    stored_name = f"{task_id}_{original_name}"
+    input_path = os.path.join(app.config["UPLOAD_FOLDER"], stored_name)
+    uploaded_file.save(input_path)
+
+    current_downloads[task_id] = {
+        "url": original_name,
+        "type": "convert",
+        "format": target_format,
+        "start_time": time.time(),
+        "files": [],
+    }
+
+    thread = threading.Thread(
+        target=convert_worker,
+        args=(task_id, input_path, app.config["UPLOAD_FOLDER"], target_format, original_name),
+    )
+    thread.daemon = True
+    thread.start()
+
+    flash(f"Conversion started! Task ID: {task_id}", "success")
     return redirect(url_for("progress", task_id=task_id))
 
 
@@ -230,8 +296,10 @@ def download_file(filename):
         ".mp4",
         ".mp3",
         ".opus",
+        ".ogg",
         ".flac",
         ".m4a",
+        ".aac",
         ".webm",
         ".avi",
         ".mkv",

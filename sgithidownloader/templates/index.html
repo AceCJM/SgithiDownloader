@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 SgithiDownloader - YouTube Downloader</title>
+    <title>🎵 SgithiDownloader - Download and Convert Media</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -64,7 +64,7 @@
     <div class="hero-section">
         <div class="container">
             <h1 class="display-4 mb-4"><i class="fas fa-music"></i> SgithiDownloader</h1>
-            <p class="lead">Download YouTube videos and audio with beautiful embedded thumbnails and metadata</p>
+            <p class="lead">Download YouTube videos and convert local media files in a single workflow</p>
         </div>
     </div>
 
@@ -73,7 +73,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-body p-5">
-                        <h2 class="card-title text-center mb-4"><i class="fas fa-download"></i> Start Downloading</h2>
+                        <h2 class="card-title text-center mb-4"><i class="fas fa-download"></i> Download From YouTube</h2>
 
                         {% with messages = get_flashed_messages(with_categories=true) %}
                             {% if messages %}
@@ -162,6 +162,52 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="card mt-4">
+                    <div class="card-body p-5">
+                        <h2 class="card-title text-center mb-4"><i class="fas fa-repeat"></i> Convert A Local File</h2>
+
+                        <form id="convertForm" method="POST" action="/convert" enctype="multipart/form-data">
+                            <div class="mb-4">
+                                <label for="media_file" class="form-label">
+                                    <i class="fas fa-file-upload"></i> Media File
+                                </label>
+                                <input type="file" class="form-control" id="media_file" name="media_file" required>
+                                <div class="form-text">Upload an audio or video file, then choose the output format.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="target_format" class="form-label">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Output Format
+                                </label>
+                                <select class="form-select" id="target_format" name="target_format" required>
+                                    <optgroup label="Audio">
+                                        <option value="mp3">🎶 MP3</option>
+                                        <option value="opus">🎵 Opus</option>
+                                        <option value="flac">🎼 FLAC</option>
+                                        <option value="aac">🎧 AAC</option>
+                                        <option value="m4a">📱 M4A</option>
+                                        <option value="alac">🍎 ALAC</option>
+                                        <option value="vorbis">🎸 Vorbis</option>
+                                        <option value="wav">📻 WAV</option>
+                                    </optgroup>
+                                    <optgroup label="Video">
+                                        <option value="mp4">🎬 MP4</option>
+                                        <option value="webm">🎥 WebM</option>
+                                        <option value="avi">📼 AVI</option>
+                                        <option value="mkv">🎞️ MKV</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-gears"></i> Start Conversion
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -186,6 +232,17 @@
                         </div>
                         <h5 class="card-title">Video Downloads</h5>
                         <p class="card-text">Download videos in MP4, WebM, and other formats with the best available quality.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-repeat"></i>
+                        </div>
+                        <h5 class="card-title">Format Conversion</h5>
+                        <p class="card-text">Convert existing audio and video files into the formats you need without leaving the browser.</p>
                     </div>
                 </div>
             </div>
@@ -230,6 +287,18 @@
             button.disabled = true;
 
             // Re-enable after 3 seconds (in case of redirect issues)
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 3000);
+        });
+
+        document.getElementById('convertForm').addEventListener('submit', function() {
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting Conversion...';
+            button.disabled = true;
+
             setTimeout(() => {
                 button.innerHTML = originalText;
                 button.disabled = false;
