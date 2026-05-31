@@ -15,7 +15,7 @@ def get_video_id(url):
 
 def grab_thumbnail(url: str, output) -> str:
     videoId = get_video_id(url)
-    url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
+    url = f"http://img.youtube.com/vi/{videoId}/default.jpg"
     response = requests.get(url)
     if response.status_code == 200:
         image_file_path = os.path.join(output, f"{videoId}_thumb.jpg")

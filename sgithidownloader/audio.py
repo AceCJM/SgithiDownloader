@@ -114,6 +114,9 @@ def embed_image_into_audio_file(audio_file_path, image_file_path, info):
 def audio_main(audio_url, output_directory="./", audio_format="best"):
     audio_file_path, file_embed_info = download_audio_file(audio_url, output_directory, audio_format)
     image_file_path = grab_thumbnail(audio_url, output_directory)
+    if image_file_path == -1:
+        print("Skipping thumbnail embedding due to download failure.")
+        return audio_file_path, file_embed_info
     crop_image_for_embeded_thumbnail(image_file_path)
     embed_image_into_audio_file(audio_file_path, image_file_path, file_embed_info)
     if os.path.exists(image_file_path):
