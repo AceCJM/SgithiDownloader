@@ -43,6 +43,23 @@ def progress_hook(d, pbar):
 def download_file(ydl_opts, url, output):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        filename = os.path.join(output, ydl.prepare_filename(info))
+        base_filename = ydl.prepare_filename(info)
+        base_path = os.path.join(output, base_filename)
+        
+        # If postprocessors changed the file extension, find the actual file
+        if os.path.exists(base_path):
+            filename = base_path
+        else:
+            # Try to find the file with a different extension (common with audio extraction)
+            base_name_without_ext = os.path.splitext(base_path)[0]
+            for ext in ['.mp3', '.m4a', '.opus', '.wav', '.aac', '.vorbis', '.flac']:
+                potential_file = base_name_without_ext + ext
+                if os.path.exists(potential_file):
+                    filename = potential_file
+                    break
+            else:
+                # Fallback to the original filename if nothing else is found
+                filename = base_path
+        
         print(f"Downloaded: {filename}")
         return filename, info
