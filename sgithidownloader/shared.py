@@ -15,14 +15,17 @@ def get_video_id(url):
 
 def grab_thumbnail(url: str, output) -> str:
     videoId = get_video_id(url)
-    url = f"http://img.youtube.com/vi/{videoId}/default.jpg"
-    response = requests.get(url)
-    if response.status_code == 200:
-        image_file_path = os.path.join(output, f"{videoId}_thumb.jpg")
-        with open(image_file_path, "wb") as f:
-            f.write(response.content)
-        print("Thumbnail downloaded")
-        return image_file_path
+    image_qualities = ["maxresdefault", "sddefault", "hqdefault", "mqdefault", "default"]
+    for quality in image_qualities:
+        url = f"http://img.youtube.com/vi/{videoId}/{quality}.jpg"
+        response = requests.get(url)
+        if response.status_code == 200:
+            image_file_path = os.path.join(output, f"{videoId}_thumb.jpg")
+            with open(image_file_path, "wb") as f:
+                f.write(response.content)
+            print(f"Thumbnail downloaded as {quality} quality")
+            return image_file_path
+        print(f"Thumbnail quality '{quality}' not available, trying next...")
     else:
         print("Failed to download thumbnail")
         return -1
